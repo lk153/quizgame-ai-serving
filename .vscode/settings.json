@@ -1,0 +1,44 @@
+{
+    "window.zoomLevel": 0,
+    "workbench.iconTheme": "material-icon-theme",
+    "editor.fontFamily": "Ubuntu Mono",
+    "editor.fontSize": 13,
+    "editor.lineHeight": 20,
+    "editor.renderWhitespace": "all",
+    "editor.scrollBeyondLastLine": false,
+    "editor.minimap.enabled": true,
+    
+    // "go.buildOnSave": "off",
+    "go.lintOnSave": "file",
+    "go.vetOnSave": "workspace",
+    "go.buildTags": "",
+    "go.buildFlags": [],
+    "go.lintTool": "golangci-lint",
+    "go.lintFlags": [
+        "--fast",
+        "--allow-parallel-runners"
+    ],
+    "go.vetFlags": [],
+    "go.testOnSave": false,
+    "go.coverOnSave": false,
+    "go.useLanguageServer": true,
+    "go.useCodeSnippetsOnFunctionSuggest": false,
+    "go.formatTool": "gofmt",
+    "go.formatFlags": [],
+    "go.goroot": "",
+    "go.gopath": "/Users/nguyentamquocviet/go",
+    "go.inferGopath": false,
+    "go.gocodeAutoBuild": true,
+    "go.testFlags": ["-v"],
+    "[go]": {
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "always"
+        }
+    },
+    "workbench.colorTheme": "Visual Studio Dark",
+    "editor.guides.indentation": true,
+    "gopls": {
+        "formatting.local": "example.com/myorg,github.com/myorg2"
+    }
+}
