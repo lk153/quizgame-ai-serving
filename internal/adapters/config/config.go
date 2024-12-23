@@ -17,9 +17,10 @@ type (
 	}
 	// App contains all the environment variables for the application
 	App struct {
-		Name string
-		Env  string
-		Port string
+		Name      string
+		Env       string
+		Port      string
+		IsCacheOn string
 	}
 
 	// Redis contains all the environment variables for the cache service
@@ -56,9 +57,10 @@ func New() (*Container, error) {
 	}
 
 	app := &App{
-		Name: os.Getenv("APP_NAME"),
-		Env:  os.Getenv("APP_ENV"),
-		Port: os.Getenv("APP_PORT"),
+		Name:      os.Getenv("APP_NAME"),
+		Env:       os.Getenv("APP_ENV"),
+		Port:      os.Getenv("APP_PORT"),
+		IsCacheOn: os.Getenv("IS_CACHE_ON"),
 	}
 
 	redis := &Redis{

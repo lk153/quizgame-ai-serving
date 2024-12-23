@@ -9,18 +9,27 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
 	"github.com/lk153/quizgame-ai-serving/internal/adapters/config"
 )
 
 func main() {
+	originDomain := "*"
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
 	r := gin.Default()
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{originDomain}, // Replace with your frontend's URL
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
 	r.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "Welcome Gin Server")
 	})
@@ -36,9 +45,12 @@ func main() {
 		log.Fatalf("initializeDB: %s\n", err)
 	}
 
+	if c.App.IsCacheOn != "1" {
+		c.Redis = nil
+	}
 	_ = initializeHandlers(ctx, r.Group("/v1"), db, c.Redis)
 	srv := &http.Server{
-		Addr:    fmt.Sprintf("127.0.0.1:%s", c.App.Port),
+		Addr:    fmt.Sprintf(":%s", c.App.Port),
 		Handler: r.Handler(),
 	}
 

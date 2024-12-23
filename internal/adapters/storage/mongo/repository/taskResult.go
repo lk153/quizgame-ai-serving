@@ -4,7 +4,9 @@ import (
 	"context"
 	"log"
 
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 
 	mongoAdapter "github.com/lk153/quizgame-ai-serving/internal/adapters/storage/mongo"
 	taskResultDomain "github.com/lk153/quizgame-ai-serving/internal/core/domains/taskResult"
@@ -52,7 +54,20 @@ func (t *TaskResultRepository) Create(
 func (t *TaskResultRepository) GetByID(
 	ctx context.Context, id string,
 ) (*taskResultDomain.TaskResultEntity, error) {
-	var taskResult taskResultDomain.TaskResultEntity
+	var (
+		taskResult taskResultDomain.TaskResultEntity
+		err        error
+	)
+	opts := options.FindOne().SetSort(bson.D{{Key: "id", Value: 1}})
+	filter := bson.D{{Key: "id", Value: id}}
+	if err = t.coll.FindOne(ctx, filter, opts).Decode(&taskResult); err != nil && err == mongo.ErrNoDocuments {
+		return nil, nil
+	}
+
+	if err != nil {
+		log.Println("GetByID:ERROR:", err)
+	}
+
 	return &taskResult, nil
 }
 
@@ -61,6 +76,23 @@ func (t *TaskResultRepository) List(
 	ctx context.Context, skip, limit uint64,
 ) ([]taskResultDomain.TaskResultEntity, error) {
 	var tasks []taskResultDomain.TaskResultEntity
+	filter := bson.D{}
+	opts := options.Find().
+		SetSort(bson.D{{Key: "id", Value: 1}}).
+		SetLimit(int64(limit)).SetSkip(int64(skip))
+	cursor, err := t.coll.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if cursor == nil {
+		return nil, nil
+	}
+
+	if err = cursor.All(ctx, &tasks); err != nil {
+		return nil, err
+	}
+
 	return tasks, nil
 }
 
@@ -68,10 +100,22 @@ func (t *TaskResultRepository) List(
 func (t *TaskResultRepository) Update(
 	ctx context.Context, task *taskResultDomain.TaskResultEntity,
 ) (*taskResultDomain.TaskResultEntity, error) {
-	return task, nil
+	var taskResult taskResultDomain.TaskResultEntity
+	opts := options.FindOneAndUpdate()
+	filter := bson.D{{Key: "id", Value: task.ID}}
+	err := t.coll.FindOneAndUpdate(ctx, filter, opts).Decode(&taskResult)
+	if err != nil {
+		return task, err
+	}
+
+	return &taskResult, nil
 }
 
 // Delete deletes a task result by ID from the database
 func (t *TaskResultRepository) Delete(ctx context.Context, id string) (err error) {
+	var taskResult taskResultDomain.TaskResultEntity
+	opts := options.FindOneAndDelete()
+	filter := bson.D{{Key: "id", Value: id}}
+	err = t.coll.FindOneAndDelete(ctx, filter, opts).Decode(&taskResult)
 	return
 }

@@ -75,8 +75,16 @@ ERR:
 func (u *TaskResultService) GetTaskResult(
 	ctx context.Context, id string,
 ) (e *taskResultEntities.TaskResultEntity, err error) {
-	cacheKey := cacheLib.GenerateCacheKey(cachePrefix, id)
-	cachedTask, err := u.cache.Get(ctx, cacheKey)
+	var (
+		cacheKey   string
+		cachedTask []byte
+	)
+	if u.cache == nil {
+		goto GETDB
+	}
+
+	cacheKey = cacheLib.GenerateCacheKey(cachePrefix, id)
+	cachedTask, err = u.cache.Get(ctx, cacheKey)
 	if err == nil {
 		err = cacheLib.Deserialize(cachedTask, &e)
 		if err != nil {
@@ -86,6 +94,7 @@ func (u *TaskResultService) GetTaskResult(
 		return
 	}
 
+GETDB:
 	e, err = u.repo.GetByID(ctx, id)
 	if err != nil {
 		if err == errDomain.ErrDataNotFound {
@@ -114,9 +123,17 @@ func (u *TaskResultService) GetTaskResult(
 func (u *TaskResultService) ListTaskResults(
 	ctx context.Context, skip, limit uint64,
 ) (tasks []taskResultEntities.TaskResultEntity, err error) {
-	params := cacheLib.GenerateCacheKeyParams(skip, limit)
-	cacheKey := cacheLib.GenerateCacheKey(cacheListPrefix, params)
-	cachedTasks, err := u.cache.Get(ctx, cacheKey)
+	var (
+		params, cacheKey string
+		cachedTasks      []byte
+	)
+	if u.cache == nil {
+		goto GETDB
+	}
+
+	params = cacheLib.GenerateCacheKeyParams(skip, limit)
+	cacheKey = cacheLib.GenerateCacheKey(cacheListPrefix, params)
+	cachedTasks, err = u.cache.Get(ctx, cacheKey)
 	if err == nil {
 		err = cacheLib.Deserialize(cachedTasks, &tasks)
 		if err != nil {
@@ -127,6 +144,7 @@ func (u *TaskResultService) ListTaskResults(
 		return
 	}
 
+GETDB:
 	tasks, err = u.repo.List(ctx, skip, limit)
 	if err != nil {
 		log.Println("ERR:", err)

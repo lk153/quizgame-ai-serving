@@ -4,17 +4,18 @@ MOCKERY             := $(GOPATH)/bin/mockery
 GO_TEST_PARALLEL    := go test -parallel 4 -count=1 -timeout 30s
 GOSTATIC            := go build -ldflags="-w -s"
 GOOGLE_WIRE 		:= $(GOPATH)/bin/wire
+GOBUILDDEBUG        := go build -gcflags=all="-N -l"
 
 $(MOCKERY):
 	GOPATH=$(GOPATH) go install -mod=mod github.com/vektra/mockery/v2@latest
 $(GOOGLE_WIRE):
 	GOPATH=$(GOPATH) go install github.com/google/wire/cmd/wire@latest
 start:
-	./out/main
+	./out/quizgame
 clean:
-	rm -rf ./out/main cpu.pprof mem.pprof
+	rm -rf ./out/quizgame cpu.pprof mem.pprof
 build: $(GOOGLE_WIRE) clean
-	go mod tidy && go mod vendor && $(GOOGLE_WIRE) ./cmd/http && $(GOSTATIC) -o out/main ./cmd/http
+	go mod tidy && go mod vendor && $(GOOGLE_WIRE) ./cmd/http && $(GOSTATIC) -o out/quizgame ./cmd/http
 lint:
 	$(GOLINT) -v ./...
 test:
@@ -27,3 +28,7 @@ mock: $(MOCKERY) #if: Interface will mock | dir: folder of interface | sn: name 
 	$(MOCKERY) --name=$(if) --dir=$(dir) --structname=$(sn) --output=$(dir)/mocks
 generate:
 	go generate ./...
+build-debug: clean
+	$(GOBUILDDEBUG) -o out/quizgame ./cmd/http
+start-debug: build-debug
+	./out/quizgame
