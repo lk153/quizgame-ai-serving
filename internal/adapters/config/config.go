@@ -7,6 +7,10 @@ import (
 	"github.com/joho/godotenv"
 )
 
+const (
+	CACHE_ON = "1"
+)
+
 // Container contains environment variables for the application, database, cache, token, and http server
 type (
 	Container struct {

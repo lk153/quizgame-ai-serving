@@ -45,7 +45,7 @@ func main() {
 		log.Fatalf("initializeDB: %s\n", err)
 	}
 
-	if c.App.IsCacheOn != "1" {
+	if c.App.IsCacheOn != config.CACHE_ON {
 		c.Redis = nil
 	}
 	_ = initializeHandlers(ctx, r.Group("/v1"), db, c.Redis)
