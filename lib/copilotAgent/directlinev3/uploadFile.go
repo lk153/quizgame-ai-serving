@@ -1,10 +1,10 @@
-package copilotagent
+package directlinev3
 
 import (
 	"context"
 )
 
-func (h *directLineV3) Uploadfile(
+func (h *directLine) Uploadfile(
 	ctx context.Context, userID string, conversationID string,
 ) (data SendMessageResp, err error) {
 	return

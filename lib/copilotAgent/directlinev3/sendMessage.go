@@ -1,4 +1,4 @@
-package copilotagent
+package directlinev3
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func (h *directLineV3) SendMessage(
+func (h *directLine) SendMessage(
 	ctx context.Context, conversationID string, userID string, message string,
 ) (data SendMessageResp, err error) {
 	url := fmt.Sprintf("%s/conversations/%s/activities", strings.TrimRight(ApiPath, "/"), conversationID)

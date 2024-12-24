@@ -1,4 +1,4 @@
-package copilotagent
+package directlinev3
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func (h *directLineV3) GenerateToken(ctx context.Context) (data GenerateTokenResp, err error) {
+func (h *directLine) GenerateToken(ctx context.Context) (data GenerateTokenResp, err error) {
 	url := fmt.Sprintf("%s/%s", strings.TrimRight(ApiPath, "/"), "tokens/generate")
 	payload := []byte(`{}`)
 	req, err := http.NewRequest(HTTP_POST, url, bytes.NewBuffer(payload))

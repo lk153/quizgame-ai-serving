@@ -1,4 +1,4 @@
-package copilotagent
+package directlinev3
 
 import (
 	"context"
@@ -22,21 +22,21 @@ type (
 		ReceiveMessages(context.Context, string, int) (ReceiveMessages, error)
 	}
 
-	directLineV3 struct {
+	directLine struct {
 		Token string
 	}
 )
 
 var (
-	_ IDirectLineAPI = &directLineV3{}
+	_ IDirectLineAPI = &directLine{}
 )
 
 func init() {
 	//TODO:
 }
 
-func New() *directLineV3 {
-	return &directLineV3{}
+func New() *directLine {
+	return &directLine{}
 }
 
 type (

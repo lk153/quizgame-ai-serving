@@ -1,4 +1,4 @@
-package copilotagent
+package directlinev3
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func (h *directLineV3) StartConversation(ctx context.Context) (data CreatedConversation, err error) {
+func (h *directLine) StartConversation(ctx context.Context) (data CreatedConversation, err error) {
 	url := fmt.Sprintf("%s/%s", strings.TrimRight(ApiPath, "/"), "conversations")
 	payload := []byte(`{}`)
 	req, err := http.NewRequest(HTTP_POST, url, bytes.NewBuffer(payload))

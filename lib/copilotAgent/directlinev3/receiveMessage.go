@@ -1,4 +1,4 @@
-package copilotagent
+package directlinev3
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func (h *directLineV3) ReceiveMessages(
+func (h *directLine) ReceiveMessages(
 	ctx context.Context, conversationID string, watermarkNum int,
 ) (data ReceiveMessages, err error) {
 	watermarkStr := ""
