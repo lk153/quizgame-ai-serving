@@ -33,6 +33,7 @@ func NewTaskResultHandler(svc ports.ITaskResultService, rg *gin.RouterGroup) Tas
 	taskRouteGroup.PUT("/", handler.UpdateTaskResult)
 	taskRouteGroup.DELETE("/:id", handler.DeleteTaskResult)
 	taskRouteGroup.POST("/assess", handler.AssessIELTS)
+	taskRouteGroup.POST("/upload", handler.Uploadfile)
 
 	return handler
 }
@@ -232,21 +233,23 @@ func (h TaskResultHandler) Uploadfile(ctx *gin.Context) {
 	uploadedFile, _ := ctx.FormFile("file")
 	log.Println(uploadedFile.Filename)
 
-	tempFile, err := os.CreateTemp("dir", "prefix")
+	tempFile, err := os.CreateTemp("tmp", "prefix")
 	if err != nil {
 		err = errors.New(fmt.Sprintf("create temp file err: %s", err.Error()))
 		handleError(ctx, err)
 		return
 	}
 
-	// defer os.Remove(tempFile.Name())
-	fmt.Println(tempFile.Name())
+	defer os.Remove(tempFile.Name())
+	ext := filepath.Ext(uploadedFile.Filename)
 
 	// Upload the file to specific dst.
 	filename := filepath.Base(tempFile.Name())
-	if err := ctx.SaveUploadedFile(uploadedFile, filename); err != nil {
+	if err := ctx.SaveUploadedFile(uploadedFile, filename+ext); err != nil {
 		err = errors.New(fmt.Sprintf("Upload file err: %s", err.Error()))
 		handleError(ctx, err)
 		return
 	}
+
+	handleSuccess(ctx, nil)
 }
