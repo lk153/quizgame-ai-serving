@@ -1,10 +1,11 @@
-package copilotagent
+package copilotAgent
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -109,8 +110,8 @@ Please provide your evaluation based on given task. Following below json structu
 
 func DoAssessmentV1(ctx context.Context, userID string, input InputTask) (result string, err error) {
 	api := lineApiLib.New()
-	api.Token = "3ktP6FQNdUTs05kZTFo0VoV9lbw2uWwHMFemO8pjfBRALOMXvKB8JQQJ99ALAC77bzfAArohAAABAZBS4f2E.Fb916kwkLmdwxSAOaZkWgvGlijruvFF6dvWcgmxBoId29ji7AagwJQQJ99ALAC77bzfAArohAAABAZBS4IhP"
-	conversationId := "Gn390swoY9W3fMRvsGGqp4-as"
+	api.Token = os.Getenv("COPILOT_TOKEN")
+	conversationId := os.Getenv("COPILOT_CONVERSATION_ID")
 	//Send messages
 	prompt := createInputPromptDemo(input)
 	fmt.Println("PROMPT:", prompt)

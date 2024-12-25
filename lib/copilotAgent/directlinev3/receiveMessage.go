@@ -24,6 +24,10 @@ func (h *directLine) ReceiveMessages(
 		return
 	}
 
+	if strings.EqualFold(h.Token, "") {
+		h.Token = secret
+	}
+
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", h.Token))
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{Transport: http.DefaultTransport}

@@ -1,9 +1,14 @@
 package http
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
+	"mime/multipart"
+	"net/http"
 	"os"
 	"path/filepath"
 
@@ -12,7 +17,8 @@ import (
 
 	taskResultDomain "github.com/lk153/quizgame-ai-serving/internal/core/domains/taskResult"
 	"github.com/lk153/quizgame-ai-serving/internal/core/ports"
-	copilotagent "github.com/lk153/quizgame-ai-serving/lib/copilotAgent"
+	"github.com/lk153/quizgame-ai-serving/lib/copilotAgent"
+	"github.com/lk153/quizgame-ai-serving/lib/copilotAgent/directlinev3"
 )
 
 // TaskResultHandler represents the HTTP handler for related task result requests
@@ -210,12 +216,12 @@ func (h TaskResultHandler) AssessIELTS(ctx *gin.Context) {
 		return
 	}
 
-	// result, err := copilotagent.DoAssessment(ctx, 123, copilotagent.InputTask{
+	// result, err := copilotAgent.DoAssessment(ctx, 123, copilotAgent.InputTask{
 	// 	TaskType:        req.TaskType,
 	// 	TaskRequirement: req.TaskRequirement,
 	// 	CandidateText:   req.CandidateText,
 	// })
-	result, err := copilotagent.DoAssessmentV1(ctx, "4a546073-385a-4e92-8e9a-abbe51268cc5", copilotagent.InputTask{
+	result, err := copilotAgent.DoAssessmentV1(ctx, os.Getenv("COPILOT_USER_ID"), copilotAgent.InputTask{
 		TaskType:        req.TaskType,
 		TaskRequirement: req.TaskRequirement,
 		CandidateText:   req.CandidateText,
@@ -245,11 +251,58 @@ func (h TaskResultHandler) Uploadfile(ctx *gin.Context) {
 
 	// Upload the file to specific dst.
 	filename := filepath.Base(tempFile.Name())
-	if err := ctx.SaveUploadedFile(uploadedFile, filename+ext); err != nil {
+	filename = filename + ext
+	defer os.Remove(filename)
+
+	if err := ctx.SaveUploadedFile(uploadedFile, filename); err != nil {
 		err = errors.New(fmt.Sprintf("Upload file err: %s", err.Error()))
 		handleError(ctx, err)
 		return
 	}
 
-	handleSuccess(ctx, nil)
+	buf := &bytes.Buffer{}
+	mpw := multipart.NewWriter(buf)
+	fWriter, err := mpw.CreateFormFile("file", filename)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	_, err = io.Copy(fWriter, tempFile)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	// Close the multipart writer before creating the request
+	err = mpw.Close()
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	url := fmt.Sprintf("https://directline.botframework.com/v3/directline/conversations/%s/upload?userId=%s", os.Getenv("COPILOT_CONVERSATION_ID"), os.Getenv("COPILOT_USER_ID"))
+	req, err := http.NewRequest("POST", url, buf)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", os.Getenv("COPILOT_TOKEN")))
+	req.Header.Add("Content-Type", mpw.FormDataContentType())
+	client := &http.Client{Transport: http.DefaultTransport}
+	resp, err := client.Do(req)
+	if err != nil {
+		return
+	}
+
+	defer resp.Body.Close()
+	var data directlinev3.UploadSendFileResp
+	err = json.NewDecoder(resp.Body).Decode(&data)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, data)
 }

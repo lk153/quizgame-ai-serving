@@ -2,16 +2,20 @@ package directlinev3
 
 import (
 	"context"
+	"os"
 )
 
 const (
 	HTTP_POST string = "POST"
 	HTTP_GET         = "GET"
 
-	secret             = "rPa8k8RaboA.OmS6ffObQmYGS81qYOOH32Ovp38jkQU0u0pOuZaNsU4"
 	ApiPath            = "https://directline.botframework.com/v3/directline/"
 	DefaultLocale      = "en-US"
 	DefaultMessageType = "message"
+)
+
+var (
+	secret = os.Getenv("COPILOT_SECRET")
 )
 
 type (
@@ -72,6 +76,10 @@ type (
 	}
 
 	SendMessageResp struct {
+		ID string `json:"id"`
+	}
+
+	UploadSendFileResp struct {
 		ID string `json:"id"`
 	}
 

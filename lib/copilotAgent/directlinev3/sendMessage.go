@@ -19,7 +19,7 @@ func (h *directLine) SendMessage(
 		Type:   DefaultMessageType,
 		From: From{
 			ID:   userID,
-			Name: "C2 User",
+			Name: "User",
 			Role: "user",
 		},
 		Text: message,
@@ -33,6 +33,10 @@ func (h *directLine) SendMessage(
 	req, err := http.NewRequest(HTTP_POST, url, bytes.NewBuffer(payload))
 	if err != nil {
 		return
+	}
+
+	if strings.EqualFold(h.Token, "") {
+		h.Token = secret
 	}
 
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", h.Token))
